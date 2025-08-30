@@ -20,6 +20,7 @@ function parseDataset(text) {
 export default function ContactsTable() {
   const [rows, setRows] = useState([])
   const [q, setQ] = useState('')
+  const [selectedDate, setSelectedDate] = useState('') // YYYY-MM-DD
 
   useEffect(() => {
     fetch('/data_set.txt').then(r => r.text()).then(t => setRows(parseDataset(t)))
@@ -27,18 +28,30 @@ export default function ContactsTable() {
 
   const filtered = useMemo(() => {
     const query = q.toLowerCase()
-    return rows.filter(r => (
-      (r.first_name || '').toLowerCase().includes(query) ||
-      (r.email || '').toLowerCase().includes(query) ||
-      (r.company || '').toLowerCase().includes(query)
-    ))
-  }, [rows, q])
+    return rows.filter(r => {
+      const created = (r.created_at || '').toString()
+      const dateKey = created.slice(0, 10) // YYYY-MM-DD
+      const matchesQuery = (
+        (r.first_name || '').toLowerCase().includes(query) ||
+        (r.email || '').toLowerCase().includes(query) ||
+        (r.company || '').toLowerCase().includes(query)
+      )
+      const matchesDate = selectedDate ? dateKey === selectedDate : true
+      return matchesQuery && matchesDate
+    })
+  }, [rows, q, selectedDate])
 
   return (
     <section className="panel table-panel">
       <div className="panel-header">
         <div className="panel-title with-icon">All Contacts</div>
         <div className="panel-controls row">
+          <input
+            type="date"
+            className="date-input"
+            value={selectedDate}
+            onChange={e => setSelectedDate(e.target.value)}
+          />
           <input
             className="search-input"
             placeholder="Search"

@@ -1,37 +1,77 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const dataWeek = [
-  { name: 'Mon', value: 8 },
-  { name: 'Tue', value: 22 },
-  { name: 'Wed', value: 35 },
-  { name: 'Thu', value: 14 },
-  { name: 'Fri', value: 28 },
-  { name: 'Sat', value: 34 },
-  { name: 'Sun', value: 18 }
-]
-const dataMonth = Array.from({ length: 12 }).map((_, i) => ({ name: `W${i + 1}`, value: Math.round(10 + Math.random() * 30) }))
-const dataYear = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => ({ name: m, value: Math.round(10 + Math.random() * 40) }))
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 
-function pickData(tf) {
-  if (tf === 'Last Week') return dataWeek
-  if (tf === 'Last Month') return dataMonth
-  return dataYear
+function getLastWeekRange() {
+  const now = new Date()
+  const day = now.getDay() // 0 Sun - 6 Sat
+  const diffToMondayThisWeek = (day === 0 ? -6 : 1) - day
+  const mondayThisWeek = new Date(now)
+  mondayThisWeek.setHours(0,0,0,0)
+  mondayThisWeek.setDate(now.getDate() + diffToMondayThisWeek)
+  const mondayLastWeek = new Date(mondayThisWeek)
+  mondayLastWeek.setDate(mondayThisWeek.getDate() - 7)
+  const sundayLastWeek = new Date(mondayLastWeek)
+  sundayLastWeek.setDate(mondayLastWeek.getDate() + 6)
+  sundayLastWeek.setHours(23,59,59,999)
+  return { start: mondayLastWeek, end: sundayLastWeek }
 }
 
-export default function ChartPanel({ timeframe, onTimeframeChange }) {
-  const data = pickData(timeframe)
+function aggregateByDay(items, range) {
+  const counts = Array(7).fill(0)
+  for (const item of items) {
+    const ts = item.created_at || item.createdAt
+    if (!ts) continue
+    const d = new Date(ts)
+    if (Number.isNaN(d.getTime())) continue
+    if (d >= range.start && d <= range.end) {
+      const jsDay = d.getDay() // 0 Sun - 6 Sat
+      const idx = jsDay === 0 ? 6 : jsDay - 1 // Mon=0 .. Sun=6
+      counts[idx] += 1
+    }
+  }
+  return DAYS.map((name, i) => ({ name, value: counts[i] }))
+}
+
+export default function ChartPanel() {
+  const [data, setData] = useState(() => DAYS.map(n => ({ name: n, value: 0 })))
+
+  function parseDataset(text) {
+    const normalize = (s) => s.replace(/ISODate\('/g, '"').replace(/'\)/g, '"')
+    const raw = normalize(text.trim())
+    try {
+      return JSON.parse(raw)
+    } catch {
+      const objs = []
+      raw.split(/\n/).forEach(line => {
+        const x = line.trim().replace(/^\[|\]$/g, '').replace(/,$/, '')
+        if (!x) return
+        if (x.startsWith('{') && x.endsWith('}')) {
+          try { objs.push(JSON.parse(x)) } catch {}
+        }
+      })
+      return objs
+    }
+  }
+
+  useEffect(() => {
+    fetch('/data_set.txt')
+      .then(r => r.text())
+      .then(t => {
+        const json = parseDataset(t)
+        const range = getLastWeekRange()
+        setData(aggregateByDay(json, range))
+      })
+      .catch(() => {
+        // keep zeros if fetch fails
+      })
+  }, [])
   return (
     <section className="panel chart-panel">
       <div className="panel-header">
         <div className="panel-title">Contact</div>
-        <div className="panel-controls">
-          <select value={timeframe} onChange={e => onTimeframeChange(e.target.value)}>
-            <option>Last Week</option>
-            <option>Last Month</option>
-            <option>Last Year</option>
-          </select>
-        </div>
+        <div className="panel-controls">Last Week</div>
       </div>
       <div className="chart-wrap">
         <ResponsiveContainer width="100%" height={260}>
