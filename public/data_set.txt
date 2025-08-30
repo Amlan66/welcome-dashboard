@@ -1,0 +1,12 @@
+[
+  { "first_name": "Ankan", "email": "ankan.sark@gmail.com", "company": "ea-tech", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "John", "email": "john.doe@example.com", "company": "TechCorp", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "Jane", "email": "jane.smith@domain.com", "company": "DevSolutions", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "Mike", "email": "mike.jones@mail.com", "company": "InnovateTech", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "Sara", "email": "sara.wilson@xyz.com", "company": "XYZ Ltd.", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "Tom", "email": "tom.brown@company.com", "company": "BrownTech", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "Emily", "email": "emily.davis@webmail.com", "company": "WebCorp", "created_at": "2025-08-16T15:45:06.178+05:30" },
+  { "first_name": "David", "email": "david.miller@outlook.com", "company": "GlobalSolutions", "created_at": "2025-08-16T15:45:06.178+05:30" }
+]
+
+
