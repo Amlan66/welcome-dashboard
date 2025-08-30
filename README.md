@@ -29,3 +29,19 @@ frontend/welcome-dashboard/
           ├─ ChartPanel.jsx
           └─ ContactsTable.jsx
 ```
+
+## Prerequisites
+
+- Node.js LTS (version 18 or newer). 
+
+## Run locally
+
+1. Open the `frontend/welcome-dashboard`.
+2. Install dependencies: `npm install`
+3. Start the dev server: `npm run dev`
+4. Open the URL shown in the terminal (usually `http://localhost:5173`).
+
+
+## Data source
+
+The contacts table fetches `public/data_set.txt`. 
